@@ -1,65 +1,72 @@
 package vn.hoidanit.jobhunter.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.service.UserService;
 import vn.hoidanit.jobhunter.service.error.IdInvalidException;
 
-import java.util.List;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-
-@RequestMapping("users")
 @RestController
 public class UserController {
-     private final UserService userService;
+    private final UserService userService;
 
-     public UserController(UserService userService) {
-          this.userService = userService;
-     }
+    private final PasswordEncoder passwordEncoder;
 
-     @PostMapping("")
-     public ResponseEntity<User> createNewUser(@RequestBody User user) {
-          User addedUser = this.userService.handleCreateUser(user);
-          return ResponseEntity.status(HttpStatus.CREATED).body(addedUser);
-     }
+    public UserController(UserService userService, PasswordEncoder passwordEncoder) {
+        this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
+    }
 
-     @DeleteMapping("/{id}")
-     public ResponseEntity<String> deleteNewUser(@PathVariable("id") long id) {
-          this.userService.deleteUser(id);
-          // return ResponseEntity.status(HttpStatus.OK).body("null");
-          return ResponseEntity.ok("nll");
-     }
+    @PostMapping("/users")
+    public ResponseEntity<User> createNewUser(@RequestBody User postManUser) {
+        String hashPassword = this.passwordEncoder.encode(postManUser.getPassword());
+        postManUser.setPassword(hashPassword);
+        User ericUser = this.userService.handleCreateUser(postManUser);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ericUser);
+    }
 
-     @GetMapping("/{id}")
-     public ResponseEntity<User> getUserByIdUser(@PathVariable("id") long id) throws IdInvalidException {
-          if (id > 1500) {
-               throw new IdInvalidException("id cannot be greater than 1500");
-          }
-          User fetchUser = this.userService.fetchUserById(id);
-          return ResponseEntity.ok(fetchUser);
-     }
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable("id") long id)
+            throws IdInvalidException {
+        if (id >= 1500) {
+            throw new IdInvalidException("Id khong lon hown 1501");
+        }
 
-     @GetMapping()
-     public ResponseEntity<List<User>> getAllUser() {
-          var fetchListUsers = this.userService.fetchAllUser();
-          return ResponseEntity.status(HttpStatus.OK).body(fetchListUsers);
-     }
+        this.userService.handleDeleteUser(id);
+        return ResponseEntity.ok("ericUser");
+        // return ResponseEntity.status(HttpStatus.OK).body("ericUser");
+    }
 
-     @PutMapping()
-     public ResponseEntity<User> updateUserById(@RequestBody User user) {
-          var id = user.getId();
-          var updateUser = this.userService.updateUserById(id, user);
-          return ResponseEntity.ok(updateUser);
-     }
+    // fetch user by id
+    @GetMapping("/users/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable("id") long id) {
+        User fetchUser = this.userService.fetchUserById(id);
+        // return ResponseEntity.ok(fetchUser);
+        return ResponseEntity.status(HttpStatus.OK).body(fetchUser);
+    }
+
+    // fetch all users
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getAllUser() {
+        // return ResponseEntity.ok(this.userService.fetchAllUser());
+        return ResponseEntity.status(HttpStatus.OK).body(this.userService.fetchAllUser());
+    }
+
+    @PutMapping("/users")
+    public ResponseEntity<User> updateUser(@RequestBody User user) {
+        User ericUser = this.userService.handleUpdateUser(user);
+        return ResponseEntity.ok(ericUser);
+    }
 
 }

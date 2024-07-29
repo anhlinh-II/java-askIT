@@ -23,13 +23,12 @@ public class FormatRestResponse implements ResponseBodyAdvice<Object> {
      @Override
      @Nullable
      public Object beforeBodyWrite(
-          @Nullable Object body,
-          MethodParameter returnType,
-          MediaType selectedContentType,
-          Class selectedConverterType,
-          ServerHttpRequest request,
-          ServerHttpResponse response
-     ) {
+               @Nullable Object body,
+               MethodParameter returnType,
+               MediaType selectedContentType,
+               Class selectedConverterType,
+               ServerHttpRequest request,
+               ServerHttpResponse response) {
           HttpServletResponse servletResponse = ((ServletServerHttpResponse) response).getServletResponse();
           int status = servletResponse.getStatus();
 
@@ -43,7 +42,6 @@ public class FormatRestResponse implements ResponseBodyAdvice<Object> {
                res.setData(body);
                res.setMessage("CALL API SUCCESS");
           }
-
 
           return res;
      }

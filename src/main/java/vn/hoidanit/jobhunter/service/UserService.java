@@ -19,7 +19,7 @@ public class UserService {
           return this.userRepository.save(user);
      }
 
-     public void deleteUser(long userId) {
+     public void handleDeleteUser(long userId) {
           this.userRepository.deleteById(userId);
      }
 
@@ -35,7 +35,8 @@ public class UserService {
           return this.userRepository.findAll();
      }
 
-     public User updateUserById(long id, User userUpdateRequest) {
+     public User handleUpdateUser(User userUpdateRequest) {
+          var id = userUpdateRequest.getId();
           var currentUser = this.fetchUserById(id);
           if (currentUser != null) {
                currentUser.setName(userUpdateRequest.getName());
@@ -45,5 +46,9 @@ public class UserService {
                currentUser = this.userRepository.save(currentUser);
           }
           return currentUser;
+     }
+
+     public User handleGetUserByUsername(String username) {
+          return this.userRepository.findByEmail(username);
      }
 }
