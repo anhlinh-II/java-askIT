@@ -1,8 +1,14 @@
 package vn.hoidanit.jobhunter.domain.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class LoginDTO {
+     @NotBlank(message = "user name không được để trống")
      private String username;
+
+     @NotBlank(message = "user name không được để trống")
      private String password;
+     
      public String getUsername() {
           return username;
      }
