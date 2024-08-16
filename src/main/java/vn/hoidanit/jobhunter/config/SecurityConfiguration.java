@@ -6,7 +6,6 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,6 +16,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.introspection.NimbusOpaqueTokenIntrospector;
+import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector;
 import org.springframework.security.web.SecurityFilterChain;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
@@ -31,9 +32,23 @@ public class SecurityConfiguration {
      @Value("${hoidanit.jwt.base64-secret}")
      private String jwtKey;
 
+     @Value("${spring.security.oauth2.resourceserver.opaque-token.introspection-uri}")
+     private String introspectionUri;
+
+     @Value("${spring.security.oauth2.resourceserver.opaque-token.client-id}")
+     private String clientId;
+
+     @Value("${spring.security.oauth2.resourceserver.opaque-token.client-secret}")
+     private String clientSecret;
+
      @Bean
      public PasswordEncoder passwordEncoder() {
           return new BCryptPasswordEncoder();
+     }
+
+     @Bean
+     public OpaqueTokenIntrospector opaqueTokenIntrospector() {
+          return new NimbusOpaqueTokenIntrospector(introspectionUri, clientId, clientSecret);
      }
 
      @Bean
@@ -51,19 +66,19 @@ public class SecurityConfiguration {
           return http.build();
      }
 
-     // @Bean
-     // public JwtDecoder jwtDecoder() {
-     //      NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withSecretKey(getSecretKey())
-     //           .macAlgorithm(SecurityUtil.JWT_ALGORITHM).build();
-     //      return token -> {
-     //           try {
-     //                return jwtDecoder.decode(token);
-     //           } catch (Exception e) {
-     //                System.out.println(">>> JWT error: " + e.getMessage());
-     //                throw e;
-     //           }
-     //      };
-     // }
+     @Bean
+     public JwtDecoder jwtDecoder() {
+          NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withSecretKey(getSecretKey())
+                    .macAlgorithm(SecurityUtil.JWT_ALGORITHM).build();
+          return token -> {
+               try {
+                    return jwtDecoder.decode(token);
+               } catch (Exception e) {
+                    System.out.println(">>> JWT error: " + e.getMessage());
+                    throw e;
+               }
+          };
+     }
 
      @Bean
      public JwtEncoder jwtEncoder() {
